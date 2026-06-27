@@ -1,0 +1,6 @@
+{
+  "name": "Kaab POS",
+  "description": "Web App POS offline-first ah oo loogu talagalay ganacsiyada yaryar ee Soomaaliya. Wuxuu taageeraa IndexedDB local sync iyo lacagaha deegaanka sida EVC Plus, Zaad, iyo Sahal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
