@@ -87,6 +87,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
           filteredSales.map((sale) => {
             const isExpanded = expandedSaleId === sale.id;
             const isPending = sale.status === 'pending_sync';
+            const isFailed = sale.status === 'failed_sync';
 
             return (
               <div
@@ -104,6 +105,8 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
                     {/* Status badge icon */}
                     {isPending ? (
                       <div className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" title="U baahan Sync" />
+                    ) : isFailed ? (
+                      <div className="h-2 w-2 rounded-full bg-red-400 animate-pulse" title="Midayntu way fashilantay" />
                     ) : (
                       <div className="h-2 w-2 rounded-full bg-emerald-400" title="La midayay (Synced)" />
                     )}
@@ -128,7 +131,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
                     </div>
 
                     {/* Sync action / Indicator */}
-                    {isPending ? (
+                    {isPending || isFailed ? (
                       <button
                         onClick={async (e) => {
                           e.stopPropagation();
@@ -141,13 +144,15 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
                         disabled={isSyncing || !isOnline}
                         className={`p-1.5 rounded-lg border text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
                           isOnline
-                            ? 'bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border-amber-500/20 hover:border-amber-500'
+                            ? isFailed
+                              ? 'bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-slate-950 border-red-500/20 hover:border-red-500'
+                              : 'bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border-amber-500/20 hover:border-amber-500'
                             : 'bg-slate-800 text-slate-500 border-slate-750 cursor-not-allowed'
                         }`}
-                        title="Sync-garee hadda"
+                        title={isFailed ? "Isku day mar kale" : "Sync-garee hadda"}
                       >
-                        <RefreshCw className="h-3 w-3" />
-                        <span className="hidden sm:inline">Sync</span>
+                        <RefreshCw className={`h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
+                        <span>{isFailed ? 'Retry' : 'Sync'}</span>
                       </button>
                     ) : (
                       <div className="p-1.5 rounded-lg bg-emerald-500/5 text-emerald-400 border border-emerald-500/10">
@@ -193,8 +198,10 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
                       </div>
                       <div>
                         <span className="block text-[10px] text-slate-500 uppercase font-bold">Sync Details</span>
-                        <p className={`font-semibold ${isPending ? 'text-amber-400' : 'text-emerald-400'}`}>
-                          Status: {isPending ? 'Pending Sync' : 'Synced'}
+                        <p className={`font-semibold ${
+                          sale.status === 'synced' ? 'text-emerald-400' : isFailed ? 'text-red-400' : 'text-amber-400'
+                        }`}>
+                          Status: {sale.status === 'synced' ? 'Synced (Cloud)' : isFailed ? 'Midayntu waa fashilantay' : 'U baahan Sync'}
                         </p>
                         {sale.synced_at && (
                           <p className="text-slate-400 text-[10px] font-mono">
@@ -203,6 +210,26 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
                         )}
                       </div>
                     </div>
+
+                    {/* Sync Error Block */}
+                    {isFailed && sale.sync_error && (
+                      <div className="bg-red-950/20 border border-red-500/20 p-2.5 rounded-lg text-red-300 text-[11px] space-y-1.5">
+                        <div className="font-bold text-red-400 flex items-center gap-1">
+                          <AlertCircle className="h-3.5 w-3.5" />
+                          Faahfaahinta Cilada (Sync Error Details)
+                        </div>
+                        <p className="font-mono text-[10px] bg-red-950/40 p-1.5 rounded border border-red-500/10 text-red-200 break-all">
+                          {sale.sync_error}
+                        </p>
+                        {sale.sync_error.toLowerCase().includes('row-level security') && (
+                          <p className="text-[10px] text-slate-400 leading-relaxed">
+                            💡 <strong className="text-white">Xalka:</strong> Fadlan tag SQL Editor-ka Supabase oo ku shub koodhkan hoose: <br />
+                            <code className="bg-slate-900 px-1 py-0.5 rounded text-amber-400 font-mono text-[10px] block my-1">ALTER TABLE sales DISABLE ROW LEVEL SECURITY;</code>
+                            si loo midooyo iibkan oo RLS-ta loo damiyo.
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {/* Notes if any */}
                     {sale.notes && (

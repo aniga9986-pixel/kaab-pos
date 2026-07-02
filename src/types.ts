@@ -9,6 +9,8 @@ export interface Product {
   category: string;
   image?: string;
   icon_name?: string; // used for custom icons when image is not available
+  sync_status?: 'pending_insert' | 'pending_update' | 'synced';
+  updated_at?: string;
 }
 
 export interface Customer {
@@ -44,9 +46,11 @@ export interface Sale {
   payment_method: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal';
   amount_paid: number;
   change_due: number;
-  status: 'pending_sync' | 'synced';
+  status: 'pending_sync' | 'synced' | 'failed_sync';
+  sync_status?: 'pending_insert' | 'pending_update' | 'synced' | 'error';
   synced_at?: string;
   notes?: string;
+  sync_error?: string;
 }
 
 export interface SyncStats {

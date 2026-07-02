@@ -7,6 +7,8 @@ interface ProductCatalogProps {
   cart: CartItem[];
   onAddToCart: (product: Product) => void;
   onAddCustomProduct: (product: Omit<Product, 'id'>) => Promise<void>;
+  onOrderMore: (product: Product) => void;
+  isSubscribed: boolean;
 }
 
 export const ProductCatalog: React.FC<ProductCatalogProps> = ({
@@ -14,6 +16,8 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   cart,
   onAddToCart,
   onAddCustomProduct,
+  onOrderMore,
+  isSubscribed,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Dhammaan');
@@ -237,7 +241,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                 key={product.id}
                 className={`flex flex-col justify-between bg-slate-800/40 rounded-xl border p-4 transition-all duration-300 hover:border-slate-700 hover:translate-y-[-2px] relative group ${
                   inCartCount > 0 ? 'ring-2 ring-emerald-500/50 bg-slate-800/70 border-emerald-500/40' : 'border-slate-800'
-                }`}
+                } ${!isSubscribed ? 'subscription-locked' : ''}`}
               >
                 {/* Cart Badge */}
                 {inCartCount > 0 && (
@@ -299,7 +303,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                 </div>
 
                 {/* Price and Add button */}
-                <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-800/60 gap-1">
+                <div id={`product-card-action-${product.id}`} className="flex items-center justify-between mt-auto pt-2 border-t border-slate-800/60 gap-2">
                   <div>
                     <div className="text-base font-bold text-white tracking-tight font-mono">
                       ${product.price.toFixed(2)}
@@ -309,19 +313,55 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => onAddToCart(product)}
-                    disabled={isOutOfStock}
-                    className={`p-2 px-3 rounded-lg flex items-center justify-center gap-1.5 font-bold text-xs transition-all cursor-pointer ${
-                      isOutOfStock
-                        ? 'bg-slate-800 text-slate-500 border border-slate-700/40 cursor-not-allowed'
-                        : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 active:scale-95 shadow-md shadow-emerald-500/10'
-                    }`}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Iibso</span>
-                  </button>
+                  <div className="flex flex-col items-end gap-1.5">
+                    {isLowStock && !isOutOfStock && (
+                      <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm low-stock-alert-blink select-none">
+                        ⚠️ {product.stock} Kaliya ayaa haray!
+                      </span>
+                    )}
+
+                    <div className="flex flex-row items-center gap-2">
+                      {/* 1. Badhanka caadiga ah ee Iibso */}
+                      <button
+                        id={`btn-iibso-original-${product.id}`}
+                        onClick={() => onAddToCart(product)}
+                        disabled={isOutOfStock || !isSubscribed}
+                        className={`p-2 px-3 rounded-lg flex items-center justify-center gap-1 font-bold text-xs transition-all cursor-pointer ${
+                          isOutOfStock || !isSubscribed
+                            ? 'bg-slate-800 text-slate-500 border border-slate-700/40 cursor-not-allowed'
+                            : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 active:scale-95 shadow-md shadow-emerald-500/10'
+                        }`}
+                      >
+                        <Plus className="h-3 w-3" />
+                        <span>+ Iibso</span>
+                      </button>
+
+                      {/* 2. Badhanka 'Ku dar' oo dhinac yaal haddii stock-gu yahay 5 ama ka yar */}
+                      {isLowStock && (
+                        <button
+                          id={`btn-ku-dar-side-${product.id}`}
+                          onClick={() => onOrderMore(product)}
+                          disabled={!isSubscribed}
+                          title={isSubscribed ? "Dalbo alaab kale (Restock)" : "Kira la'aan"}
+                          className={`font-bold text-xs p-2 px-2.5 rounded-lg flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md cursor-pointer whitespace-nowrap ${
+                            !isSubscribed
+                              ? 'bg-slate-800 text-slate-500 border border-slate-700/40 cursor-not-allowed'
+                              : 'bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-amber-500/10'
+                          }`}
+                        >
+                          <span>🔄 Ku dar</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
+
+                {/* Lock overlay if subscription is locked */}
+                {!isSubscribed && (
+                  <div className="lock-overlay">
+                    <span className="lock-overlay-span">🔒 Kirada waa lagaa gubay. La xiriir Kaab POS</span>
+                  </div>
+                )}
               </div>
             );
           })

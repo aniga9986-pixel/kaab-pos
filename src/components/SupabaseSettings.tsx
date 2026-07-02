@@ -7,6 +7,10 @@ interface SupabaseSettingsProps {
   onClose: () => void;
   onConfigChanged: () => void;
   isSupabaseConnected: boolean;
+  isSubscribed: boolean;
+  expiresAt: string;
+  onToggleSubscription: (val: boolean) => void;
+  onUpdateExpiresAt: (val: string) => void;
 }
 
 export const SupabaseSettings: React.FC<SupabaseSettingsProps> = ({
@@ -14,10 +18,16 @@ export const SupabaseSettings: React.FC<SupabaseSettingsProps> = ({
   onClose,
   onConfigChanged,
   isSupabaseConnected,
+  isSubscribed,
+  expiresAt,
+  onToggleSubscription,
+  onUpdateExpiresAt,
 }) => {
   const [url, setUrl] = useState('');
   const [key, setKey] = useState('');
   const [copied, setCopied] = useState(false);
+  const [licenseKey, setLicenseKey] = useState('');
+  const [licenseStatus, setLicenseStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const config = getSupabaseConfig();
@@ -80,7 +90,13 @@ CREATE TABLE IF NOT EXISTS sales_items (
   quantity INT NOT NULL,
   price NUMERIC NOT NULL,
   total NUMERIC NOT NULL
-);`;
+);
+
+-- 4. Dami Row-Level Security (RLS) ama Abuur Policies si iibku u midoobo
+-- Qaladka "row violates row-level security policy" waxaa lagu xalliyaa in RLS laga damiyo miisaskan:
+ALTER TABLE inventory DISABLE ROW LEVEL SECURITY;
+ALTER TABLE sales DISABLE ROW LEVEL SECURITY;
+ALTER TABLE sales_items DISABLE ROW LEVEL SECURITY;`;
 
   const copySqlToClipboard = () => {
     navigator.clipboard.writeText(sqlSchema);
@@ -104,6 +120,103 @@ CREATE TABLE IF NOT EXISTS sales_items (
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Subscription and Lease Management Card */}
+          <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-3.5">
+            <div className="flex items-center justify-between border-b border-slate-850 pb-2.5">
+              <h4 className="font-bold text-white text-xs flex items-center gap-1.5 uppercase tracking-wider">
+                <span className="text-base">🔑</span> Rukumi & Maamulka Kirada (Lease & Sub)
+              </h4>
+              <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
+                isSubscribed 
+                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' 
+                  : 'bg-red-500/15 text-red-400 border border-red-500/20 animate-pulse'
+              }`}>
+                {isSubscribed ? 'KIRADU WAA FURAN TAHAY (ACTIVE)' : 'KIRADU WAA XIRAN TAHAY (LOCKED)'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              {/* Left Details */}
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Heerka Kirada:</span>
+                  <span className={`font-bold ${isSubscribed ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {isSubscribed ? 'Guul (Active)' : 'Gubatay (Expired)'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Ku eg yahay:</span>
+                  <span className="font-mono text-slate-300 font-bold">{new Date(expiresAt).toLocaleDateString()}</span>
+                </div>
+                <div className="pt-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isSubscribed) {
+                        // Set expired
+                        onToggleSubscription(false);
+                        onUpdateExpiresAt('2026-07-01T00:00:00Z');
+                      } else {
+                        // Set active
+                        onToggleSubscription(true);
+                        onUpdateExpiresAt('2027-01-01T00:00:00Z');
+                      }
+                    }}
+                    className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      isSubscribed
+                        ? 'bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-slate-950 border border-red-500/20'
+                        : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-bold'
+                    }`}
+                  >
+                    {isSubscribed ? '⚠️ Xir Kirada (Simulate Expired)' : '🔑 Daar Kirada (Renew Lease)'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Right License Activation Form */}
+              <div className="border-t md:border-t-0 md:border-l border-slate-850 pt-3 md:pt-0 md:pl-4 space-y-2.5">
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  💡 <strong className="text-slate-300">Renew:</strong> Type license key <code className="bg-slate-900 text-amber-400 px-1 py-0.5 rounded font-mono">KAAB-RENEW-2026</code> to extend lease for 1 year!
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Geli Fureyaasha (License Key)"
+                    value={licenseKey}
+                    onChange={(e) => {
+                      setLicenseKey(e.target.value);
+                      setLicenseStatus(null);
+                    }}
+                    className="flex-1 bg-slate-900 border border-slate-800 text-white rounded-lg px-2.5 py-1.5 font-mono text-[11px] focus:outline-none focus:border-amber-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (licenseKey.trim().toUpperCase() === 'KAAB-RENEW-2026') {
+                        onToggleSubscription(true);
+                        onUpdateExpiresAt('2027-07-01T14:15:41-07:00');
+                        setLicenseStatus('Guul: Kiradaada waa la cusbooneysiiyay!');
+                        setLicenseKey('');
+                      } else {
+                        setLicenseStatus('Cilad: Furaas sax maaha!');
+                      }
+                    }}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer shrink-0"
+                  >
+                    Renew
+                  </button>
+                </div>
+                {licenseStatus && (
+                  <p className={`text-[10px] font-semibold font-mono ${
+                    licenseStatus.startsWith('Guul') ? 'text-emerald-400' : 'text-red-400'
+                  }`}>
+                    {licenseStatus}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Status Alert */}
           {isSupabaseConnected ? (
             <div className="bg-emerald-950/20 border border-emerald-500/20 p-3.5 rounded-xl flex items-start gap-3 text-xs text-emerald-400">
@@ -124,6 +237,25 @@ CREATE TABLE IF NOT EXISTS sales_items (
               </div>
             </div>
           )}
+
+          {/* Troubleshooting Info Alert */}
+          <div className="bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-xs space-y-2">
+            <h4 className="font-bold text-amber-400 flex items-center gap-1.5">
+              <ShieldAlert className="h-4 w-4 shrink-0" />
+              Xallinta Ciladaha Supabase (Troubleshooting Guide)
+            </h4>
+            <ul className="list-disc pl-5 space-y-1.5 text-slate-300">
+              <li>
+                <strong className="text-white">Dami Xaqiijinta Email-ka (Confirm Email):</strong> Gudaha dashboard-ka Supabase, tag <code className="bg-slate-900 px-1 py-0.5 rounded text-amber-300">Auth</code> &rarr; <code className="bg-slate-900 px-1 py-0.5 rounded text-amber-300">Providers</code> &rarr; <code className="bg-slate-900 px-1 py-0.5 rounded text-amber-300">Email</code> oo dami (toggle off) <strong className="text-white">"Confirm email"</strong>. Tani waxay kuu ogolaanaysaa inaad isla markaaba is-diiwaan geliso oo aad gasho.
+              </li>
+              <li>
+                <strong className="text-white">Dami RLS (Row-Level Security):</strong> Haddii aad aragto qalad ah <code className="text-red-400 font-mono">violates row-level security policy</code> markaad isku dayeyso inaad iibka midayso, fadlan hubi inaad ku dhex ordiday <strong className="text-emerald-400">ALTER TABLE ... DISABLE ROW LEVEL SECURITY;</strong> gudaha SQL Editor-ka Supabase (eeg qeybta 4-aad ee SQL-ka hoose).
+              </li>
+              <li>
+                <strong className="text-white">Abuur Miisaska SQL:</strong> Koobiyeey koodhka SQL ee hoose oo ku shub <code className="bg-slate-900 px-1 py-0.5 rounded text-emerald-300">SQL Editor</code> gudaha Supabase si iibku u midoobo.
+              </li>
+            </ul>
+          </div>
 
           {/* Setup Form */}
           <form onSubmit={handleSave} className="space-y-3.5">

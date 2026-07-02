@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wifi, WifiOff, Database, RefreshCw, Settings } from 'lucide-react';
+import { Wifi, WifiOff, Database, RefreshCw, Settings, LogOut } from 'lucide-react';
 import { SyncStats } from '../types';
 
 interface HeaderProps {
@@ -11,6 +11,7 @@ interface HeaderProps {
   onManualSync: () => void;
   onOpenSettings: () => void;
   isSupabaseConnected: boolean;
+  onLogout: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,6 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
   onManualSync,
   onOpenSettings,
   isSupabaseConnected,
+  onLogout,
 }) => {
   const finalOnlineState = isOnline && !isSimulatingOffline;
 
@@ -103,10 +105,21 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenSettings}
             id="settings-toggle-btn"
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-colors"
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-colors cursor-pointer"
             title="Supabase Settings"
           >
             <Settings className="h-4 w-4" />
+          </button>
+
+          {/* Logout Button */}
+          <button
+            onClick={onLogout}
+            id="logout-btn"
+            className="p-1.5 rounded-lg bg-red-950/20 hover:bg-red-950/40 border border-red-500/20 text-red-400 transition-colors flex items-center gap-1 text-xs font-semibold cursor-pointer"
+            title="Ka bax dukaanka (Log Out)"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Kabax</span>
           </button>
         </div>
       </div>

@@ -1,1 +1,45 @@
 @import "tailwindcss";
+
+@keyframes blinker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.low-stock-alert-blink {
+  animation: blinker 1.5s linear infinite;
+}
+
+/* Subscription Lock styling */
+.subscription-locked {
+  opacity: 0.6;
+}
+
+.lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 23, 42, 0.85); /* Madow translucent ah oo ku dhow slate-ka */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  z-index: 10;
+  padding: 15px;
+  text-align: center;
+  backdrop-filter: blur(2.5px); /* Wax yar blur ka dhigaya wixii ka dambeeya */
+  pointer-events: auto; /* Xanniba gujinta badhamada hoose */
+}
+
+.lock-overlay-span {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 14px;
+  background-color: #dc3545; /* Sanduuq casaan ah oo fariinta u gaar ah */
+  padding: 10px 16px;
+  border-radius: 6px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+

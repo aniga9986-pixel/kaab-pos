@@ -8,6 +8,7 @@ interface CartProps {
   onRemoveFromCart: (productId: string) => void;
   onClearCart: () => void;
   onCheckout: (paymentMethod: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal', customerName: string, customerPhone: string, discount: number) => void;
+  isSubscribed?: boolean;
 }
 
 export const Cart: React.FC<CartProps> = ({
@@ -16,6 +17,7 @@ export const Cart: React.FC<CartProps> = ({
   onRemoveFromCart,
   onClearCart,
   onCheckout,
+  isSubscribed = true,
 }) => {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -209,11 +211,11 @@ export const Cart: React.FC<CartProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => handleCheckoutClick('Cash')}
-              disabled={cart.length === 0}
+              disabled={cart.length === 0 || !isSubscribed}
               id="pay-cash-btn"
               className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
-                cart.length === 0
-                  ? 'bg-slate-850 border-slate-800/40 text-slate-600 cursor-not-allowed'
+                cart.length === 0 || !isSubscribed
+                  ? 'bg-slate-850 border-slate-800/40 text-slate-600 cursor-not-allowed opacity-50'
                   : 'bg-emerald-500 text-slate-950 border-emerald-400 hover:bg-emerald-400 font-bold shadow-md shadow-emerald-500/10'
               }`}
             >
@@ -223,11 +225,11 @@ export const Cart: React.FC<CartProps> = ({
 
             <button
               onClick={() => handleCheckoutClick('EVC Plus')}
-              disabled={cart.length === 0}
+              disabled={cart.length === 0 || !isSubscribed}
               id="pay-evc-btn"
               className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
-                cart.length === 0
-                  ? 'bg-slate-850 border-slate-800/40 text-slate-600 cursor-not-allowed'
+                cart.length === 0 || !isSubscribed
+                  ? 'bg-slate-850 border-slate-800/40 text-slate-600 cursor-not-allowed opacity-50'
                   : 'bg-sky-600 text-white border-sky-500 hover:bg-sky-500 font-bold'
               }`}
             >
@@ -237,11 +239,11 @@ export const Cart: React.FC<CartProps> = ({
 
             <button
               onClick={() => handleCheckoutClick('Zaad')}
-              disabled={cart.length === 0}
+              disabled={cart.length === 0 || !isSubscribed}
               id="pay-zaad-btn"
               className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
-                cart.length === 0
-                  ? 'bg-slate-850 border-slate-800/40 text-slate-600 cursor-not-allowed'
+                cart.length === 0 || !isSubscribed
+                  ? 'bg-slate-850 border-slate-800/40 text-slate-600 cursor-not-allowed opacity-50'
                   : 'bg-amber-600 text-white border-amber-500 hover:bg-amber-500 font-bold'
               }`}
             >
@@ -251,11 +253,11 @@ export const Cart: React.FC<CartProps> = ({
 
             <button
               onClick={() => handleCheckoutClick('Sahal')}
-              disabled={cart.length === 0}
+              disabled={cart.length === 0 || !isSubscribed}
               id="pay-sahal-btn"
               className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
-                cart.length === 0
-                  ? 'bg-slate-850 border-slate-800/40 text-slate-600 cursor-not-allowed'
+                cart.length === 0 || !isSubscribed
+                  ? 'bg-slate-850 border-slate-800/40 text-slate-600 cursor-not-allowed opacity-50'
                   : 'bg-purple-600 text-white border-purple-500 hover:bg-purple-500 font-bold'
               }`}
             >
