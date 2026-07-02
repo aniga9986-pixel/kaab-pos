@@ -9,6 +9,7 @@ interface ProductCatalogProps {
   onAddCustomProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   onOrderMore: (product: Product) => void;
   isSubscribed: boolean;
+  subscriptionExpiresAt?: string;
 }
 
 export const ProductCatalog: React.FC<ProductCatalogProps> = ({
@@ -18,6 +19,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   onAddCustomProduct,
   onOrderMore,
   isSubscribed,
+  subscriptionExpiresAt,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Dhammaan');
@@ -359,7 +361,14 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                 {/* Lock overlay if subscription is locked */}
                 {!isSubscribed && (
                   <div className="lock-overlay">
-                    <span className="lock-overlay-span">🔒 Kirada waa lagaa gubay. La xiriir Kaab POS</span>
+                    <span className="lock-overlay-span flex flex-col items-center gap-1 text-center">
+                      <span>🔒 Kirada waa lagaa gubay. La xiriir Kaab POS</span>
+                      {subscriptionExpiresAt && (
+                        <span className="text-[11px] opacity-90 font-mono font-normal border-t border-white/20 pt-1 mt-1 block">
+                          Ku eg: {new Date(subscriptionExpiresAt).toLocaleDateString()} {new Date(subscriptionExpiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </span>
                   </div>
                 )}
               </div>

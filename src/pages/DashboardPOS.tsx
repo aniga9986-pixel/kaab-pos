@@ -546,6 +546,7 @@ export default function DashboardPOS() {
                   onAddCustomProduct={handleAddCustomProduct}
                   onOrderMore={setRestockingProduct}
                   isSubscribed={isSubscribed}
+                  subscriptionExpiresAt={subscriptionExpiresAt}
                 />
               </div>
 
