@@ -43,7 +43,7 @@ export interface Sale {
   subtotal: number;
   discount: number;
   total: number;
-  payment_method: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal';
+  payment_method: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal' | 'Deen';
   amount_paid: number;
   change_due: number;
   status: 'pending_sync' | 'synced' | 'failed_sync';

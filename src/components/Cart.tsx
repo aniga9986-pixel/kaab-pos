@@ -7,7 +7,7 @@ interface CartProps {
   onUpdateQuantity: (productId: string, delta: number) => void;
   onRemoveFromCart: (productId: string) => void;
   onClearCart: () => void;
-  onCheckout: (paymentMethod: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal', customerName: string, customerPhone: string, discount: number) => void;
+  onCheckout: (paymentMethod: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal' | 'Deen', customerName: string, customerPhone: string, discount: number) => void;
   isSubscribed?: boolean;
 }
 
@@ -32,7 +32,7 @@ export const Cart: React.FC<CartProps> = ({
   const exchangeRate = 26000;
   const totalShSo = Math.round(total * exchangeRate);
 
-  const handleCheckoutClick = (method: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal') => {
+  const handleCheckoutClick = (method: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal' | 'Deen') => {
     if (cart.length === 0) return;
     onCheckout(method, customerName, customerPhone, discount);
   };
@@ -208,7 +208,7 @@ export const Cart: React.FC<CartProps> = ({
           <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
             Dooro Habka Lacag Bixinta (Checkout)
           </span>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <button
               onClick={() => handleCheckoutClick('Cash')}
               disabled={cart.length === 0 || !isSubscribed}
@@ -263,6 +263,20 @@ export const Cart: React.FC<CartProps> = ({
             >
               <span className="text-xs">Sahal</span>
               <span className="text-[10px] font-normal opacity-80 font-normal">Golis</span>
+            </button>
+
+            <button
+              onClick={() => handleCheckoutClick('Deen')}
+              disabled={cart.length === 0 || !isSubscribed}
+              id="pay-deen-btn"
+              className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer col-span-2 sm:col-span-1 ${
+                cart.length === 0 || !isSubscribed
+                  ? 'bg-slate-850 border-slate-800/40 text-slate-600 cursor-not-allowed opacity-50'
+                  : 'bg-slate-700 text-white border-slate-600 hover:bg-slate-600 font-bold'
+              }`}
+            >
+              <span className="text-xs flex items-center gap-1">📓 Deen</span>
+              <span className="text-[10px] font-normal opacity-80">Buugga u qor</span>
             </button>
           </div>
         </div>

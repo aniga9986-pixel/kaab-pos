@@ -52,7 +52,7 @@ export default function DashboardPOS() {
   // Checkout modal states
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutPayload, setCheckoutPayload] = useState<{
-    paymentMethod: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal';
+    paymentMethod: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal' | 'Deen';
     customerName: string;
     customerPhone: string;
     discount: number;
@@ -344,7 +344,7 @@ export default function DashboardPOS() {
   };
 
   const handleCheckoutTrigger = (
-    paymentMethod: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal',
+    paymentMethod: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal' | 'Deen',
     customerName: string,
     customerPhone: string,
     discount: number

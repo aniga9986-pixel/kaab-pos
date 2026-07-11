@@ -8,7 +8,7 @@ interface CheckoutModalProps {
   subtotal: number;
   discount: number;
   total: number;
-  paymentMethod: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal';
+  paymentMethod: 'Cash' | 'EVC Plus' | 'Zaad' | 'Sahal' | 'Deen';
   customerName: string;
   customerPhone: string;
   onConfirmPayment: (amountPaid: number, changeDue: number, notes: string) => void;
@@ -34,7 +34,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   // Auto-fill amount paid for mobile payments since they usually pay exactly the total
   useEffect(() => {
-    if (paymentMethod !== 'Cash') {
+    if (paymentMethod === 'Deen') {
+      setAmountPaidStr('0');
+    } else if (paymentMethod !== 'Cash') {
       setAmountPaidStr(total.toString());
     } else {
       setAmountPaidStr('');
@@ -52,14 +54,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (amountPaid < total) {
+    if (paymentMethod === 'Deen' && !customerName.trim()) {
+      setErrorMsg("Fadlan qor magaca macmiilka (Customer Name) si deynta loogu qoro buugga!");
+      return;
+    }
+    if (paymentMethod !== 'Deen' && amountPaid < total) {
       setErrorMsg(`Lacagta la bixiyay (${amountPaid.toFixed(2)}) way ka yar tahay qiimaha la rabo (${total.toFixed(2)})!`);
       return;
     }
 
     // Embed TxnID in notes if mobile payment
     let finalNotes = notes;
-    if (paymentMethod !== 'Cash' && txnId) {
+    if (paymentMethod !== 'Cash' && paymentMethod !== 'Deen' && txnId) {
       finalNotes = `[Ref ID: ${txnId}] ${notes}`.trim();
     }
 
@@ -90,6 +96,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           color: 'text-purple-400 border-purple-500/20 bg-purple-950/20',
           text: 'Sahal waa adeegga rasmiga ah ee Puntland.',
         };
+      case 'Deen':
+        return {
+          operator: '📓 Buugga Deynta (Credit / Deen)',
+          ussd: `Xaddiga deynta: $${(total - amountPaid).toFixed(2)}`,
+          color: 'text-slate-300 border-slate-700 bg-slate-950/30',
+          text: 'Hubi in magaca iyo lambarka macmiilka si sax ah loo diiwangeliyay si deynta loogu qoro.',
+        };
       default:
         return null;
     }
@@ -105,6 +118,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           <div className="flex items-center gap-2">
             {paymentMethod === 'Cash' ? (
               <Coins className="h-5 w-5 text-emerald-400" />
+            ) : paymentMethod === 'Deen' ? (
+              <FileText className="h-5 w-5 text-slate-400" />
             ) : (
               <Smartphone className="h-5 w-5 text-sky-400" />
             )}
@@ -155,7 +170,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           <div className="space-y-3">
             <div>
               <label className="block text-xs font-bold text-slate-400 mb-1">
-                {paymentMethod === 'Cash' ? 'Lacagta uu ku siiyay (Amount Paid USD)' : 'Hubi wadarta lacagta lagu shubay ($)'}
+                {paymentMethod === 'Cash' ? 'Lacagta uu ku siiyay (Amount Paid USD)' : paymentMethod === 'Deen' ? 'Intee lacag ah ayuu hadda bixiyay (Haddii ay jirto)?' : 'Hubi wadarta lacagta lagu shubay ($)'}
               </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-2.5 font-bold font-mono text-slate-500">$</span>
@@ -163,7 +178,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   type="number"
                   step="0.01"
                   required
-                  min="0.01"
+                  min={paymentMethod === 'Deen' ? "0" : "0.01"}
                   placeholder="0.00"
                   value={amountPaidStr}
                   onChange={(e) => {
@@ -171,7 +186,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     setErrorMsg('');
                   }}
                   className="w-full bg-slate-950 text-white font-mono font-bold pl-8 pr-4 py-2.5 rounded-xl border border-slate-800 focus:border-emerald-500 focus:outline-none"
-                  autoFocus={paymentMethod === 'Cash'}
+                  autoFocus={paymentMethod === 'Cash' || paymentMethod === 'Deen'}
                 />
               </div>
             </div>
@@ -192,8 +207,24 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
             )}
 
+            {/* Display Remaining Debt for Deen */}
+            {paymentMethod === 'Deen' && (
+              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3 flex justify-between items-center">
+                <div>
+                  <span className="block text-[10px] text-slate-400 uppercase font-bold">Haray oo Deymays ah (Debt amount):</span>
+                  <span className="text-xl font-mono font-extrabold text-red-400">${Math.max(0, total - amountPaid).toFixed(2)}</span>
+                </div>
+                {total - amountPaid > 0 && (
+                  <div className="text-right">
+                    <span className="block text-[10px] text-slate-400">Shilling Soomaali:</span>
+                    <span className="text-sm font-mono font-bold text-yellow-400">{(Math.max(0, total - amountPaid) * exchangeRate).toLocaleString()} Sh.So</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Transaction ID for mobile */}
-            {paymentMethod !== 'Cash' && (
+            {paymentMethod !== 'Cash' && paymentMethod !== 'Deen' && (
               <div>
                 <label className="block text-xs font-bold text-slate-400 mb-1">
                   Lambarka Cadaynta / Transaction ID (Ex: TXN73629)

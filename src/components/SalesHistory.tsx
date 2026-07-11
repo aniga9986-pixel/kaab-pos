@@ -195,7 +195,11 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
                         <span className="block text-[10px] text-slate-500 uppercase font-bold">Lacag Bixinta</span>
                         <p className="text-slate-300 font-medium">Qaabka: {sale.payment_method}</p>
                         <p className="text-slate-400 font-mono">La dhiibay: ${sale.amount_paid.toFixed(2)}</p>
-                        {sale.change_due > 0 && <p className="text-emerald-400 font-mono">Haraaga: ${sale.change_due.toFixed(2)}</p>}
+                        {sale.payment_method === 'Deen' ? (
+                          <p className="text-red-400 font-mono font-bold">Deynta dhiman: ${(sale.total - sale.amount_paid).toFixed(2)}</p>
+                        ) : sale.change_due > 0 ? (
+                          <p className="text-emerald-400 font-mono">Haraaga: ${sale.change_due.toFixed(2)}</p>
+                        ) : null}
                       </div>
                       <div>
                         <span className="block text-[10px] text-slate-500 uppercase font-bold">Sync Details</span>

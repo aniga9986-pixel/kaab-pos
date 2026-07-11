@@ -41,11 +41,13 @@ export const DailySales: React.FC<DailySalesProps> = ({ sales }) => {
     let zaadTotal = 0;
     let sahalTotal = 0;
     let cashTotal = 0;
+    let deenTotal = 0;
 
     let evcCount = 0;
     let zaadCount = 0;
     let sahalCount = 0;
     let cashCount = 0;
+    let deenCount = 0;
 
     filteredSales.forEach((sale) => {
       const amount = sale.total || 0;
@@ -64,6 +66,9 @@ export const DailySales: React.FC<DailySalesProps> = ({ sales }) => {
       } else if (method === 'Cash') {
         cashTotal += amount;
         cashCount++;
+      } else if (method === 'Deen') {
+        deenTotal += amount;
+        deenCount++;
       }
     });
 
@@ -79,6 +84,7 @@ export const DailySales: React.FC<DailySalesProps> = ({ sales }) => {
         zaad: { total: zaadTotal, count: zaadCount, percentage: totalUsd > 0 ? (zaadTotal / totalUsd) * 100 : 0 },
         sahal: { total: sahalTotal, count: sahalCount, percentage: totalUsd > 0 ? (sahalTotal / totalUsd) * 100 : 0 },
         cash: { total: cashTotal, count: cashCount, percentage: totalUsd > 0 ? (cashTotal / totalUsd) * 100 : 0 },
+        deen: { total: deenTotal, count: deenCount, percentage: totalUsd > 0 ? (deenTotal / totalUsd) * 100 : 0 },
       },
     };
   }, [filteredSales]);
@@ -196,7 +202,7 @@ export const DailySales: React.FC<DailySalesProps> = ({ sales }) => {
           Qaybta Hab-Lacageedka (Payment Breakdown)
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {/* EVC PLUS */}
           <div className="bg-slate-950/30 border border-slate-800 rounded-xl p-3.5 space-y-2.5 relative overflow-hidden">
             <div className="flex items-center justify-between">
@@ -314,8 +320,39 @@ export const DailySales: React.FC<DailySalesProps> = ({ sales }) => {
               </div>
               <div className="w-full bg-slate-950 rounded-full h-1">
                 <div 
-                  className="bg-slate-450 h-1 rounded-full transition-all duration-500" 
+                  className="bg-slate-400 h-1 rounded-full transition-all duration-500" 
                   style={{ width: `${stats.methods.cash.percentage}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* DEEN */}
+          <div className="bg-slate-950/30 border border-slate-800 rounded-xl p-3.5 space-y-2.5 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-slate-500" />
+                📓 Deen
+              </span>
+              <span className="text-[10px] font-mono text-slate-400 font-semibold bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800">
+                {stats.methods.deen.count} iib
+              </span>
+            </div>
+            <div>
+              <span className="block text-sm font-bold font-mono text-white">${stats.methods.deen.total.toFixed(2)}</span>
+              <span className="block text-[9px] font-mono text-slate-500">
+                ≈ {(Math.round(stats.methods.deen.total * 26000)).toLocaleString()} Sh.So
+              </span>
+            </div>
+            <div className="space-y-1">
+              <div className="flex justify-between text-[9px] text-slate-500">
+                <span>Saamaynta:</span>
+                <span>{stats.methods.deen.percentage.toFixed(1)}%</span>
+              </div>
+              <div className="w-full bg-slate-950 rounded-full h-1">
+                <div 
+                  className="bg-slate-500 h-1 rounded-full transition-all duration-500" 
+                  style={{ width: `${stats.methods.deen.percentage}%` }}
                 />
               </div>
             </div>
