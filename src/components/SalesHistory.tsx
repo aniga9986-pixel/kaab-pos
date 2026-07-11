@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, RefreshCw, CheckCircle2, AlertCircle, Trash2, Search, Calendar, ChevronDown, ChevronUp, Tag } from 'lucide-react';
+import { Clock, RefreshCw, CheckCircle2, AlertCircle, Trash2, Search, Calendar, ChevronDown, ChevronUp, Tag, Copy, Check } from 'lucide-react';
 import { Sale } from '../types';
 
 interface SalesHistoryProps {
@@ -19,6 +19,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
 }) => {
   const [expandedSaleId, setExpandedSaleId] = useState<string | null>(null);
   const [filterSearch, setFilterSearch] = useState('');
+  const [copiedErrorSqlId, setCopiedErrorSqlId] = useState<string | null>(null);
 
   const toggleExpand = (saleId: string) => {
     setExpandedSaleId(expandedSaleId === saleId ? null : saleId);
@@ -213,20 +214,53 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
 
                     {/* Sync Error Block */}
                     {isFailed && sale.sync_error && (
-                      <div className="bg-red-950/20 border border-red-500/20 p-2.5 rounded-lg text-red-300 text-[11px] space-y-1.5">
+                      <div className="bg-red-950/20 border border-red-500/20 p-3 rounded-lg text-red-300 text-[11px] space-y-2">
                         <div className="font-bold text-red-400 flex items-center gap-1">
                           <AlertCircle className="h-3.5 w-3.5" />
                           Faahfaahinta Cilada (Sync Error Details)
                         </div>
-                        <p className="font-mono text-[10px] bg-red-950/40 p-1.5 rounded border border-red-500/10 text-red-200 break-all">
+                        <p className="font-mono text-[10px] bg-red-950/40 p-2 rounded border border-red-500/10 text-red-200 break-all leading-normal">
                           {sale.sync_error}
                         </p>
-                        {sale.sync_error.toLowerCase().includes('row-level security') && (
-                          <p className="text-[10px] text-slate-400 leading-relaxed">
-                            💡 <strong className="text-white">Xalka:</strong> Fadlan tag SQL Editor-ka Supabase oo ku shub koodhkan hoose: <br />
-                            <code className="bg-slate-900 px-1 py-0.5 rounded text-amber-400 font-mono text-[10px] block my-1">ALTER TABLE sales DISABLE ROW LEVEL SECURITY;</code>
-                            si loo midooyo iibkan oo RLS-ta loo damiyo.
-                          </p>
+                        {(sale.sync_error.toLowerCase().includes('row-level security') || 
+                          sale.sync_error.toLowerCase().includes('row level security') || 
+                          sale.sync_error.toLowerCase().includes('security policy')) && (
+                          <div className="bg-slate-900 border border-slate-800 p-2.5 rounded mt-1 text-[10px] text-slate-300 space-y-2">
+                            <p className="leading-relaxed">
+                              💡 <strong className="text-white">Xalka:</strong> Supabase RLS (Row Level Security) ayaa xannibaya midaynta iibkan. Si aad u xalliso, fadlan guji badhanka hoose si aad u koobiyeysato koodhka SQL-ka, ka dibna ku shub <strong className="text-emerald-400">SQL Editor</strong>-ka dashboardkaaga Supabase oo guji <strong className="text-emerald-400">Run</strong>.
+                            </p>
+                            
+                            <div className="relative">
+                              <pre className="bg-slate-950 p-2 rounded text-amber-400 font-mono text-[9px] border border-slate-850 overflow-x-auto leading-normal">
+{`ALTER TABLE sales DISABLE ROW LEVEL SECURITY;
+ALTER TABLE sales_items DISABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory DISABLE ROW LEVEL SECURITY;`}
+                              </pre>
+                              
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const sql = `ALTER TABLE sales DISABLE ROW LEVEL SECURITY;\nALTER TABLE sales_items DISABLE ROW LEVEL SECURITY;\nALTER TABLE inventory DISABLE ROW LEVEL SECURITY;`;
+                                  navigator.clipboard.writeText(sql);
+                                  setCopiedErrorSqlId(sale.id);
+                                  setTimeout(() => setCopiedErrorSqlId(null), 2000);
+                                }}
+                                className="absolute top-1.5 right-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-2 py-1 rounded border border-slate-800 text-[9px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                              >
+                                {copiedErrorSqlId === sale.id ? (
+                                  <>
+                                    <Check className="h-3 w-3 text-emerald-400" />
+                                    <span>Copied!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="h-3 w-3" />
+                                    <span>Copy SQL</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
                     )}

@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { ProductCatalog } from '../components/ProductCatalog';
+import { EditProductModal } from '../components/EditProductModal';
 import { Cart } from '../components/Cart';
 import { CheckoutModal } from '../components/CheckoutModal';
 import { SalesHistory } from '../components/SalesHistory';
+import { DailySales } from '../components/DailySales';
 import { SupabaseSettings } from '../components/SupabaseSettings';
-import { localDB } from '../db';
+import { localDB, db } from '../db';
+import { useSyncEngine } from '../hooks/useSyncEngine';
 import { createSupabaseInstance, syncSaleToSupabase } from '../supabaseClient';
 import { Product, CartItem, Sale, SaleItem, SyncStats } from '../types';
 import { syncPendingSales } from '../syncEngine';
@@ -35,7 +38,8 @@ export default function DashboardPOS() {
   // Tabs: 'pos' (Point of Sale) or 'history' (Taariikhda Iibka)
   const [activeTab, setActiveTab] = useState<'pos' | 'history'>('pos');
 
-  // Network and Sync
+  // Network and Sync using useSyncEngine custom hook
+  const syncEngine = useSyncEngine(db);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isSimulatingOffline, setIsSimulatingOffline] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -59,6 +63,9 @@ export default function DashboardPOS() {
   // Restock modal states
   const [restockingProduct, setRestockingProduct] = useState<Product | null>(null);
   const [restockAmount, setRestockAmount] = useState<number>(50);
+
+  // Edit product modal states
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Subscription / Lease states
   const [isSubscribed, setIsSubscribed] = useState<boolean>(() => {
@@ -154,25 +161,19 @@ export default function DashboardPOS() {
     checkSupabaseConnection();
   }, []);
 
-  // Monitor hardware network connections
+  // Monitor and synchronize network status and sync activity from useSyncEngine custom hook
   useEffect(() => {
-    const goOnline = () => {
-      setIsOnline(true);
+    setIsOnline(syncEngine.isOnline);
+    if (syncEngine.isOnline) {
       showTemporaryMessage('info', 'Xiriirkii Internet-ka waa soo laabtay! Isku dayaya inaan midayno xogta...');
-    };
-    const goOffline = () => {
-      setIsOnline(false);
+    } else {
       showTemporaryMessage('error', 'Internet-kii waa go\'ay! Barnaamijku wuxuu hadda ku shaqaynayaa "Offline-Mode".');
-    };
+    }
+  }, [syncEngine.isOnline]);
 
-    window.addEventListener('online', goOnline);
-    window.addEventListener('offline', goOffline);
-
-    return () => {
-      window.removeEventListener('online', goOnline);
-      window.removeEventListener('offline', goOffline);
-    };
-  }, []);
+  useEffect(() => {
+    setIsSyncing(syncEngine.isSyncing);
+  }, [syncEngine.isSyncing]);
 
   // Auto Sync trigger on connection restore
   useEffect(() => {
@@ -216,8 +217,10 @@ export default function DashboardPOS() {
         const firstError = failedSales[0].sync_error || '';
         if (firstError.includes('relation "sales" does not exist')) {
           showTemporaryMessage('error', 'Cillad: Shaxda "sales" kama jirto Supabase. Guji icon-ka Settings si aad u abuurto!');
-        } else if (firstError.includes('row-level security policy')) {
-          showTemporaryMessage('error', 'Cillad RLS: Supabase wuxuu u baahan yahay in RLS laga damiyo. Ka eeg xalka Settings-ka.');
+        } else if (firstError.toLowerCase().includes('row-level security') || 
+                   firstError.toLowerCase().includes('row level security') || 
+                   firstError.toLowerCase().includes('security policy')) {
+          showTemporaryMessage('error', 'Cillad RLS: Supabase wuxuu u baahan yahay in RLS laga damiyo. Ka eeg xalka Settings-ka ama Taariikhda Iibka.');
         } else {
           showTemporaryMessage('error', `Cillad midayn: ${failedSales.length} iib ah waxaa ku dhacay khalad. Ka eeg Settings.`);
         }
@@ -238,7 +241,8 @@ export default function DashboardPOS() {
       return;
     }
     showTemporaryMessage('info', 'Midayntii ayaa la bilaabay...');
-    await triggerAutomaticSync();
+    await syncEngine.startSync();
+    await loadData();
   };
 
   const handleLogout = async () => {
@@ -547,6 +551,7 @@ export default function DashboardPOS() {
                   onOrderMore={setRestockingProduct}
                   isSubscribed={isSubscribed}
                   subscriptionExpiresAt={subscriptionExpiresAt}
+                  onEditProduct={setEditingProduct}
                 />
               </div>
 
@@ -565,7 +570,9 @@ export default function DashboardPOS() {
             </div>
           ) : (
             /* Sales History Audit / Sync Control Panel */
-            <div className="max-w-3xl mx-auto w-full">
+            <div className="max-w-3xl mx-auto w-full flex flex-col gap-6">
+              <DailySales sales={sales} />
+
               <SalesHistory
                 sales={sales}
                 isOnline={isOnline && !isSimulatingOffline}
@@ -701,6 +708,18 @@ export default function DashboardPOS() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* EDIT PRODUCT POPUP MODAL */}
+      {editingProduct && (
+        <EditProductModal
+          product={editingProduct}
+          onClose={() => {
+            setEditingProduct(null);
+            loadData();
+          }}
+          db={db}
+        />
       )}
 
       {/* SUPABASE CONNECTION CREDENTIALS PANEL */}

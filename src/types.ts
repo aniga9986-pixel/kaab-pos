@@ -48,6 +48,7 @@ export interface Sale {
   change_due: number;
   status: 'pending_sync' | 'synced' | 'failed_sync';
   sync_status?: 'pending_insert' | 'pending_update' | 'synced' | 'error';
+  is_dirty?: number;
   synced_at?: string;
   notes?: string;
   sync_error?: string;

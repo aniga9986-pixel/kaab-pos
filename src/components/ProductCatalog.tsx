@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Plus, Sparkles, Box, AlertTriangle, PlusCircle } from 'lucide-react';
+import { Search, Plus, Sparkles, Box, AlertTriangle, PlusCircle, Edit } from 'lucide-react';
 import { Product, CartItem } from '../types';
 
 interface ProductCatalogProps {
@@ -10,6 +10,7 @@ interface ProductCatalogProps {
   onOrderMore: (product: Product) => void;
   isSubscribed: boolean;
   subscriptionExpiresAt?: string;
+  onEditProduct?: (product: Product) => void;
 }
 
 export const ProductCatalog: React.FC<ProductCatalogProps> = ({
@@ -20,6 +21,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   onOrderMore,
   isSubscribed,
   subscriptionExpiresAt,
+  onEditProduct,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Dhammaan');
@@ -225,7 +227,23 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
 
       {/* Product Grid */}
       <div className="flex-1 overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[400px]">
-        {filteredProducts.length === 0 ? (
+        {products.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center p-8 md:p-12 border-2 border-dashed border-slate-850 rounded-2xl text-center bg-slate-950/25 my-auto max-w-md mx-auto">
+            <span className="text-5xl mb-4 select-none">📦</span>
+            <h3 className="text-white font-bold text-base mb-1">Dukaanku waa maran yahay (Clean Slate)</h3>
+            <p className="text-slate-400 text-xs max-w-xs mx-auto mb-5 leading-relaxed">
+              Ma helin wax alaab ah deegaanka qalabkaaga (IndexedDB). Fadlan ku dar alaabtaada gaarka ah si aad u bilowdo iibinta.
+            </p>
+            <button 
+              type="button"
+              onClick={() => setIsAddingProduct(true)}
+              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 mx-auto"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Diiwángeli Alaab Cusub
+            </button>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center text-slate-500 py-16">
             <Box className="h-12 w-12 text-slate-600 mb-3" />
             <p className="text-sm font-medium">Wax alaab ah oo la helay ma jiraan.</p>
@@ -254,9 +272,24 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
 
                 {/* Category & Stock Warning */}
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700/60">
-                    {product.category}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700/60 font-medium">
+                      {product.category}
+                    </span>
+                    {onEditProduct && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditProduct(product);
+                        }}
+                        className="text-slate-500 hover:text-emerald-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
+                        title="Wax ka bedel alaabta"
+                      >
+                        <Edit className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
 
                   {isOutOfStock ? (
                     <span className="flex items-center gap-1 text-[10px] text-red-400 bg-red-950/40 border border-red-500/20 px-1.5 py-0.5 rounded-full font-semibold">

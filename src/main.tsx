@@ -16,8 +16,16 @@ if (typeof window !== 'undefined') {
       try {
         return originalDefineProperty.call(Object, obj, prop, descriptor);
       } catch (err) {
-        if (obj === window && (prop === 'ethereum' || prop === 'solana' || String(prop).includes('ethereum'))) {
-          console.warn(`Prevented crash redefining non-configurable property "${String(prop)}" on window.`);
+        const propStr = String(prop || '');
+        const errMessage = err instanceof Error ? err.message : String(err || '');
+        if (
+          propStr.includes('ethereum') ||
+          propStr.includes('solana') ||
+          errMessage.includes('ethereum') ||
+          errMessage.includes('solana') ||
+          errMessage.includes('redefine property')
+        ) {
+          console.warn(`Prevented crash redefining property "${propStr}" on object.`, err);
           return obj;
         }
         throw err;
@@ -29,8 +37,15 @@ if (typeof window !== 'undefined') {
       try {
         return originalDefineProperties.call(Object, obj, properties);
       } catch (err) {
-        if (obj === window) {
-          console.warn('Prevented crash in defineProperties on window.');
+        const errMessage = err instanceof Error ? err.message : String(err || '');
+        if (
+          obj === window ||
+          obj === globalThis ||
+          errMessage.includes('ethereum') ||
+          errMessage.includes('solana') ||
+          errMessage.includes('redefine property')
+        ) {
+          console.warn('Prevented crash in defineProperties.', err);
           return obj;
         }
         throw err;

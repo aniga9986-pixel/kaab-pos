@@ -59,6 +59,7 @@ export async function syncPendingSales(): Promise<void> {
         await db.sales.update(sale.id, {
           status: 'synced',
           sync_status: 'synced',
+          is_dirty: 0,
           synced_at: new Date().toISOString(),
           sync_error: undefined
         });
@@ -68,6 +69,7 @@ export async function syncPendingSales(): Promise<void> {
         await db.sales.update(sale.id, {
           status: 'synced',
           sync_status: 'synced',
+          is_dirty: 0,
           synced_at: new Date().toISOString(),
           sync_error: undefined
         });
