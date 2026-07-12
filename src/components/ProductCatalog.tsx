@@ -338,7 +338,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                 </div>
 
                 {/* Price and Add button */}
-                <div id={`product-card-action-${product.id}`} className="flex items-center justify-between mt-auto pt-2 border-t border-slate-800/60 gap-2">
+                <div id={`product-card-action-${product.id}`} className="product-action flex items-center justify-between mt-auto pt-2 border-t border-slate-800/60 gap-2">
                   <div>
                     <div className="text-base font-bold text-white tracking-tight font-mono">
                       ${product.price.toFixed(2)}
@@ -355,13 +355,13 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                       </span>
                     )}
 
-                    <div className="flex flex-row items-center gap-2">
+                    <div className="action-buttons-container flex flex-row items-center gap-2">
                       {/* 1. Badhanka caadiga ah ee Iibso */}
                       <button
                         id={`btn-iibso-original-${product.id}`}
                         onClick={() => onAddToCart(product)}
                         disabled={isOutOfStock || !isSubscribed}
-                        className={`p-2 px-3 rounded-lg flex items-center justify-center gap-1 font-bold text-xs transition-all cursor-pointer ${
+                        className={`btn-iibso-original p-2 px-3 rounded-lg flex items-center justify-center gap-1 font-bold text-xs transition-all cursor-pointer ${
                           isOutOfStock || !isSubscribed
                             ? 'bg-slate-800 text-slate-500 border border-slate-700/40 cursor-not-allowed'
                             : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 active:scale-95 shadow-md shadow-emerald-500/10'
@@ -378,7 +378,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                           onClick={() => onOrderMore(product)}
                           disabled={!isSubscribed}
                           title={isSubscribed ? "Dalbo alaab kale (Restock)" : "Kira la'aan"}
-                          className={`font-bold text-xs p-2 px-2.5 rounded-lg flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md cursor-pointer whitespace-nowrap ${
+                          className={`btn-ku-dar-side font-bold text-xs p-2 px-2.5 rounded-lg flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md cursor-pointer whitespace-nowrap ${
                             !isSubscribed
                               ? 'bg-slate-800 text-slate-500 border border-slate-700/40 cursor-not-allowed'
                               : 'bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-amber-500/10'
